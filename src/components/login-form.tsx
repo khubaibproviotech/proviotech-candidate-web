@@ -3,19 +3,83 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useContext, useState } from "react";
-import { checkHaveAccount } from "@/context/context";
+import { checkHaveAccount, Admin } from "@/context/context";
 import { Eye, EyeOff } from "lucide-react";
+import {Sonner}
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+
+  //  State
+  const [userName, setUserName] = useState("");
+  const [nameError, setNameError] = useState(false);
+
+  const [password, setPassword] = useState("");
+  const [passError, setPassError] = useState(false);
+
+
   const [showLoginPassword, setShowLoginPassword] = useState(false);
 
+  //  Context
   let account = useContext(checkHaveAccount);
 
+  let active = useContext(Admin)
+
+
+  //  Check Username
+  // const checkUsername = (e : any) => {
+  //   if (e.target.value.length < 3 && e.target.value != "") {
+  //     setNameError(true)
+  //   } else {
+  //     setNameError(false)
+  //   }
+  // }
+
+  //   Check Password
+  // const checkPassword = (e: any)  => {
+  //   if (e.target.value.length < 8 && e.target.value != "") {
+  //     setPassError(true);
+  //   } else {
+  //     setPassError(false);
+  //   }
+  //   setPassword(e.target.value)
+  // }
+
+  const handleSubmit = async (e: any) => {
+    e.preventDefault()
+    setNameError(false);
+    setPassError(false);
+    try {
+      let data = await fetch("http://localhost:3333/api/admin/auth", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body : JSON.stringify({
+          username: userName,
+          password: password
+        })
+      })
+      let obj = await data.json()
+      console.log(obj, "data")
+      if (obj.data == "no account registered") {
+        setNameError(true)
+      } else if (obj.data == "incorrect password") {
+        setPassError(true)
+      } else {
+        console.log(obj)
+      }
+    } catch(err) {
+      console.log(err)
+    }
+  }
+
+
+//   JSX
   return (
-    <form className={cn("flex flex-col gap-6", className)} {...props}>
+    <form onSubmit={(e) => handleSubmit(e)} className={cn("flex flex-col gap-6", className)} {...props}>
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Login to your account</h1>
         <p className="text-muted-foreground text-sm text-balance">
@@ -26,11 +90,14 @@ export function LoginForm({
         <div className="grid gap-3">
           <Label htmlFor="username-login">Username</Label>
           <Input
+          onChange={(e) => setUserName(e.target.value)}
+          className={nameError ? `border border-red-400 focus:border-red-400` : ``}
             id="username-login"
             type="text"
             placeholder="Enter your username"
             required
           />
+          {nameError ? <div className="text-sm text-red-400">username not registered</div> : <></>}
         </div>
         <div className="grid gap-3">
           <div className="flex items-center">
@@ -44,6 +111,8 @@ export function LoginForm({
           </div>
           <div className="relative">
             <Input
+            onChange={(e) => setPassword(e.target.value)}
+            className={passError ? `border border-red-400 focus:border-red-400` : ``}
               id="password-login"
               type={!showLoginPassword ? "password" : "text"}
               placeholder="Enter your password"
@@ -59,6 +128,7 @@ export function LoginForm({
               ></EyeOff>
             )}
           </div>
+          {passError ? <div className="text-sm text-red-400">password is incorrect</div> : <></>}
         </div>
         <Button type="submit" className="w-full">
           Login
