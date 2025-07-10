@@ -2,15 +2,18 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { checkHaveAccount, Admin } from "@/context/context";
 import { Eye, EyeOff } from "lucide-react";
-import {Sonner}
+import { Toaster, toast } from "sonner";
+import Cookies from "js-cookie";
+
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+  
 
   //  State
   const [userName, setUserName] = useState("");
@@ -25,7 +28,8 @@ export function LoginForm({
   //  Context
   let account = useContext(checkHaveAccount);
 
-  let active = useContext(Admin)
+  let admin = useContext(Admin)
+  
 
 
   //  Check Username
@@ -69,17 +73,26 @@ export function LoginForm({
       } else if (obj.data == "incorrect password") {
         setPassError(true)
       } else {
-        console.log(obj)
+        toast("✔ Login successfull")
+        Cookies.set("auth", obj.data.auth)
+        setUserName("")
+        setPassword("")
+        admin?.setAdmin(true)
       }
     } catch(err) {
       console.log(err)
     }
   }
 
+  useEffect(() => {
+    console.log(admin?.admin, "login")
+  }, [admin?.admin])
+  
 
 //   JSX
   return (
     <form onSubmit={(e) => handleSubmit(e)} className={cn("flex flex-col gap-6", className)} {...props}>
+    <Toaster></Toaster>
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Login to your account</h1>
         <p className="text-muted-foreground text-sm text-balance">
@@ -94,6 +107,7 @@ export function LoginForm({
           className={nameError ? `border border-red-400 focus:border-red-400` : ``}
             id="username-login"
             type="text"
+            value={userName}
             placeholder="Enter your username"
             required
           />
@@ -114,6 +128,7 @@ export function LoginForm({
             onChange={(e) => setPassword(e.target.value)}
             className={passError ? `border border-red-400 focus:border-red-400` : ``}
               id="password-login"
+              value={password}
               type={!showLoginPassword ? "password" : "text"}
               placeholder="Enter your password"
               required
@@ -128,7 +143,7 @@ export function LoginForm({
               ></EyeOff>
             )}
           </div>
-          {passError ? <div className="text-sm text-red-400">password is incorrect</div> : <></>}
+          {passError ? <div className="text-sm text-red-400">invalid password</div> : <></>}
         </div>
         <Button type="submit" className="w-full">
           Login

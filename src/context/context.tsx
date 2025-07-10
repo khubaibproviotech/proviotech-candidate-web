@@ -7,8 +7,8 @@ interface CheckHaveAccounttype {
 }
 
 interface AdminType {
-  admin: { username: string; password: string; __id: string } | null;
-  setAdmin: React.Dispatch<SetStateAction<{username: string, password : string, __id: string }>> | React.Dispatch<SetStateAction<null>>
+  admin: boolean
+  setAdmin: React.Dispatch<SetStateAction<boolean>>
 }
 
 let checkHaveAccount = createContext<null | CheckHaveAccounttype>(null);
